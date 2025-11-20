@@ -16,15 +16,10 @@ message ResultSend {
     string message = 1;
 }
 
-message UpdateSend{
-    int64 amount = 1;
-    int64 clientId = 2;
-}
-
 message Empty {}
 
 service Auction {
     rpc Bid (BidIn) returns (BidOut) {};
     rpc Result (Empty)  returns (ResultSend) {};
-    rpc Update (UpdateSend) return (Empty) {};
+    rpc Update (BidIn) returns (Empty) {};
 }
