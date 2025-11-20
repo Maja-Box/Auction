@@ -14,10 +14,12 @@ type Auction_service struct{
 	proto.UnimplementedAuctionServer
 	error       chan error
 	grpc        *grpc.Server
-	serverId	int 
+	serverPort	string 
 	highest int
 	//first int is client id, second is highest bid that that client has made
 	bids    map[int]int
+	ports	[]string
+	peers   map[string]proto.AuctionClient //client pointing to other servers
 	
 }
 
@@ -26,14 +28,26 @@ func main(){
 		bids: make(map[int]int),
 		highest: 0,
 	}
-	server.start_server(1)
-	server.start_server(2)
-	server.start_server(3)
+	ports := []string{
+		":5050",
+		":5051",
+		":5052",
+	} 
+
+	
+
+	go server.start_server(":5050",ports)
+	go server.start_server(":5051",ports)
+	go server.start_server(":5052",ports)
+
+	select{}
 }
 
-func (server *Auction_service) start_server(serId int){
+func (server *Auction_service) start_server(string numberPort,[]string ports){
 	server.grpc = grpc.NewServer()
-	listener, err := net.Listen("tcp", ":5050")
+	listener, err := net.Listen("tcp", numberPort)
+	server.peers = make(map[string]proto.AuctionClient)
+
 
 	if err != nil {
 		log.Fatalf("Did not work 1")
@@ -41,6 +55,19 @@ func (server *Auction_service) start_server(serId int){
 
 	log.Println("the server has started")
 
+	for _, value := range server.ports {
+		if(value != numberPort){
+			connection := "localhost" + value
+			conn, err := grpc.NewClient(connection, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				log.Fatalf("connection failed")
+			}
+
+			client := proto.NewAuctionClient(conn)
+			server.peers[value] = client
+		}
+	}
+	
 	proto.RegisterAuctionServer(server.grpc, server)
 
 	err = server.grpc.Serve(listener)
@@ -62,13 +89,27 @@ func (server *Auction_service) Bid(ctx context.Context, in proto.BidIn) (*proto.
 	
 	if server.highest < int(amount) {
 		server.highest = int(amount)
-		server.bids[int(amount)] = int(clientId)
+		server.bids[int(clientId)] = int(amount)
 	}else{
-		server.bids[int(amount)] = 0
+		server.bids[int(clientId)] = 0
 		return &proto.BidOut{Ack: "Client " + strconv.FormatInt(clientId, 10) + "Your bid has been rejected", BidderId: clientId}, nil
 	}
 
+	for _, i := range server.peers{
+		
+	}
+
 	return &proto.BidOut{Ack: "Client " + strconv.FormatInt(clientId, 10) + "Your bid has been accepted", BidderId: clientId}, nil
+}
+
+func (server *Auction_service) Update(ctx context.context, in proto.UpdateSend) (*proto.Empty, error){
+	amount := in.Amount
+	clientId := in.ClientId
+
+	server.highest = int(amount)
+	server.bids[int(clientId)] = int(amount)
+
+	return &proto.Empty{}, nil
 }
 
 func (server *Auction_service) Result(ctx context.Context, in proto.Empty) (*proto.ResultSend, error){
