@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "AuctionC/gRPC/proto";
+
+message BidIn {
+    int64 amount = 1;
+    int64 clientId = 2;
+}
+
+message BidOut{
+    string ack = 1;
+    int64 bidderId = 2;
+}
+
+message ResultSend {
+    string message = 1;
+}
+
+message Empty {}
+
+service Auction {
+    rpc Bid (BidIn) returns (BidOut) {};
+    rpc Result (Empty)  returns (ResultSend) {};
+}
