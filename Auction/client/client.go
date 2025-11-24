@@ -22,7 +22,7 @@ var client proto.AuctionClient
 func main() {
 	conn, err := grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Not working client 1")
+		log.Fatalf("Could not connect to :5050")
 	}
 	log.Println("Client has connected to server")
 	if err != nil {
@@ -39,7 +39,7 @@ func main() {
 func query(clientId int) {
 
 	for {
-		fmt.Println("If you want to check the state of the auction, type check. If you want to bid, type bid.")
+		log.Println("If you want to check the state of the auction, type check. If you want to bid, type bid.")
 
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
@@ -50,6 +50,8 @@ func query(clientId int) {
 		} else if Text == "bid" {
 			bid()
 		}
+
+		log.Println("Redoing query command")
 	}
 
 }
@@ -61,7 +63,7 @@ func checkFunc(){
 		connect()
 		checkFunc()
 	}
-	log.Println(check.Message)
+	log.Println(check)
 }
 
 func bid() {
@@ -94,7 +96,7 @@ func bid() {
 		clientId = int(send.BidderId)
 		log.Println(send.BidderId)
 	}
-	log.Println(send.Ack)
+	log.Println(send)
 }
 
 func connect(){
@@ -102,15 +104,26 @@ func connect(){
 	if counter == 1{
 		conn, err := grpc.NewClient("localhost:5051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
-			log.Fatalf("Not working client 1")
+			log.Println("Could not create connection to :5051")
+			connect()
+			return
 		}
 		log.Println("Client has connected to server")
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
 		client = proto.NewAuctionClient(conn)
+		if client == nil{
+			log.Println("client is null")
+		}
 		log.Println("i connected to server 5051")
-	}else{
+
+		send, err := client.UpdateServer(context.Background(), &proto.Crash{Port : ":5050",})
+		if err != nil{
+			log.Println("error while sending client bid")
+		}
+		log.Println(send)
+	}else if counter == 2{
 		conn, err := grpc.NewClient("localhost:5052", grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 			log.Fatalf("Not working client 1")
@@ -121,5 +134,12 @@ func connect(){
 		}
 		client = proto.NewAuctionClient(conn)
 		log.Println("i connected to server 5052")
+		send, err := client.UpdateServer(context.Background(), &proto.Crash{Port : ":5051",})
+		if err != nil{
+			log.Println("error while sending client bid")
+		}
+		log.Println(send)
+	} else {
+		log.Println("No more servers available")
 	}
 }

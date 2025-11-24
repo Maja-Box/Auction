@@ -19,9 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Auction_Bid_FullMethodName    = "/Auction/Bid"
-	Auction_Result_FullMethodName = "/Auction/Result"
-	Auction_Update_FullMethodName = "/Auction/Update"
+	Auction_Bid_FullMethodName            = "/Auction/Bid"
+	Auction_Result_FullMethodName         = "/Auction/Result"
+	Auction_Update_FullMethodName         = "/Auction/Update"
+	Auction_UpdateServer_FullMethodName   = "/Auction/UpdateServer"
+	Auction_ReplicateCrash_FullMethodName = "/Auction/ReplicateCrash"
 )
 
 // AuctionClient is the client API for Auction service.
@@ -31,6 +33,8 @@ type AuctionClient interface {
 	Bid(ctx context.Context, in *BidIn, opts ...grpc.CallOption) (*BidOut, error)
 	Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ResultSend, error)
 	Update(ctx context.Context, in *BidIn, opts ...grpc.CallOption) (*Empty, error)
+	UpdateServer(ctx context.Context, in *Crash, opts ...grpc.CallOption) (*Empty, error)
+	ReplicateCrash(ctx context.Context, in *Crash, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type auctionClient struct {
@@ -71,6 +75,26 @@ func (c *auctionClient) Update(ctx context.Context, in *BidIn, opts ...grpc.Call
 	return out, nil
 }
 
+func (c *auctionClient) UpdateServer(ctx context.Context, in *Crash, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, Auction_UpdateServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionClient) ReplicateCrash(ctx context.Context, in *Crash, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, Auction_ReplicateCrash_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuctionServer is the server API for Auction service.
 // All implementations must embed UnimplementedAuctionServer
 // for forward compatibility.
@@ -78,6 +102,8 @@ type AuctionServer interface {
 	Bid(context.Context, *BidIn) (*BidOut, error)
 	Result(context.Context, *Empty) (*ResultSend, error)
 	Update(context.Context, *BidIn) (*Empty, error)
+	UpdateServer(context.Context, *Crash) (*Empty, error)
+	ReplicateCrash(context.Context, *Crash) (*Empty, error)
 	mustEmbedUnimplementedAuctionServer()
 }
 
@@ -96,6 +122,12 @@ func (UnimplementedAuctionServer) Result(context.Context, *Empty) (*ResultSend, 
 }
 func (UnimplementedAuctionServer) Update(context.Context, *BidIn) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedAuctionServer) UpdateServer(context.Context, *Crash) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateServer not implemented")
+}
+func (UnimplementedAuctionServer) ReplicateCrash(context.Context, *Crash) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReplicateCrash not implemented")
 }
 func (UnimplementedAuctionServer) mustEmbedUnimplementedAuctionServer() {}
 func (UnimplementedAuctionServer) testEmbeddedByValue()                 {}
@@ -172,6 +204,42 @@ func _Auction_Update_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auction_UpdateServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Crash)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServer).UpdateServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auction_UpdateServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServer).UpdateServer(ctx, req.(*Crash))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auction_ReplicateCrash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Crash)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServer).ReplicateCrash(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auction_ReplicateCrash_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServer).ReplicateCrash(ctx, req.(*Crash))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auction_ServiceDesc is the grpc.ServiceDesc for Auction service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +258,14 @@ var Auction_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Update",
 			Handler:    _Auction_Update_Handler,
+		},
+		{
+			MethodName: "UpdateServer",
+			Handler:    _Auction_UpdateServer_Handler,
+		},
+		{
+			MethodName: "ReplicateCrash",
+			Handler:    _Auction_ReplicateCrash_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

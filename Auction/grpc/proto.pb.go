@@ -205,6 +205,50 @@ func (*Empty) Descriptor() ([]byte, []int) {
 	return file_proto_proto_rawDescGZIP(), []int{3}
 }
 
+type Crash struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Port          string                 `protobuf:"bytes,1,opt,name=port,proto3" json:"port,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Crash) Reset() {
+	*x = Crash{}
+	mi := &file_proto_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Crash) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Crash) ProtoMessage() {}
+
+func (x *Crash) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Crash.ProtoReflect.Descriptor instead.
+func (*Crash) Descriptor() ([]byte, []int) {
+	return file_proto_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Crash) GetPort() string {
+	if x != nil {
+		return x.Port
+	}
+	return ""
+}
+
 var File_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_rawDesc = "" +
@@ -219,11 +263,15 @@ const file_proto_proto_rawDesc = "" +
 	"\n" +
 	"ResultSend\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"\a\n" +
-	"\x05Empty2`\n" +
+	"\x05Empty\"\x1b\n" +
+	"\x05Crash\x12\x12\n" +
+	"\x04port\x18\x01 \x01(\tR\x04port2\xa6\x01\n" +
 	"\aAuction\x12\x18\n" +
 	"\x03Bid\x12\x06.BidIn\x1a\a.BidOut\"\x00\x12\x1f\n" +
 	"\x06Result\x12\x06.Empty\x1a\v.ResultSend\"\x00\x12\x1a\n" +
-	"\x06Update\x12\x06.BidIn\x1a\x06.Empty\"\x00B\x15Z\x13AuctionC/gRPC/protob\x06proto3"
+	"\x06Update\x12\x06.BidIn\x1a\x06.Empty\"\x00\x12 \n" +
+	"\fUpdateServer\x12\x06.Crash\x1a\x06.Empty\"\x00\x12\"\n" +
+	"\x0eReplicateCrash\x12\x06.Crash\x1a\x06.Empty\"\x00B\x15Z\x13AuctionC/gRPC/protob\x06proto3"
 
 var (
 	file_proto_proto_rawDescOnce sync.Once
@@ -237,22 +285,27 @@ func file_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_rawDescData
 }
 
-var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_proto_goTypes = []any{
 	(*BidIn)(nil),      // 0: BidIn
 	(*BidOut)(nil),     // 1: BidOut
 	(*ResultSend)(nil), // 2: ResultSend
 	(*Empty)(nil),      // 3: Empty
+	(*Crash)(nil),      // 4: Crash
 }
 var file_proto_proto_depIdxs = []int32{
 	0, // 0: Auction.Bid:input_type -> BidIn
 	3, // 1: Auction.Result:input_type -> Empty
 	0, // 2: Auction.Update:input_type -> BidIn
-	1, // 3: Auction.Bid:output_type -> BidOut
-	2, // 4: Auction.Result:output_type -> ResultSend
-	3, // 5: Auction.Update:output_type -> Empty
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	4, // 3: Auction.UpdateServer:input_type -> Crash
+	4, // 4: Auction.ReplicateCrash:input_type -> Crash
+	1, // 5: Auction.Bid:output_type -> BidOut
+	2, // 6: Auction.Result:output_type -> ResultSend
+	3, // 7: Auction.Update:output_type -> Empty
+	3, // 8: Auction.UpdateServer:output_type -> Empty
+	3, // 9: Auction.ReplicateCrash:output_type -> Empty
+	5, // [5:10] is the sub-list for method output_type
+	0, // [0:5] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -269,7 +322,7 @@ func file_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_rawDesc), len(file_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

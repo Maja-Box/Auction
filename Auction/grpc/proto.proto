@@ -5,11 +5,15 @@ option go_package = "AuctionC/gRPC/proto";
 message BidIn {
     int64 amount = 1;
     int64 clientId = 2;
+    bool timeIsStarted = 3;
+    bool auctionOver = 4;
 }
 
 message BidOut{
     string ack = 1;
     int64 bidderId = 2;
+    bool timeIsStarted = 3;
+    bool auctionOver = 4;
 }
 
 message ResultSend {
@@ -18,8 +22,14 @@ message ResultSend {
 
 message Empty {}
 
+message Crash {
+    string port = 1;
+}
+
 service Auction {
     rpc Bid (BidIn) returns (BidOut) {};
     rpc Result (Empty)  returns (ResultSend) {};
     rpc Update (BidIn) returns (Empty) {};
+    rpc UpdateServer (Crash) returns (Empty) {};
+    rpc ReplicateCrash (Crash) returns (Empty) {};
 }
