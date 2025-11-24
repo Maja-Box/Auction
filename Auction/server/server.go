@@ -6,6 +6,8 @@ import(
 	"net"
 	"log"
 	"strconv"
+	"bufio"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -33,13 +35,22 @@ func main(){
 		":5052",
 	} 
 
-	for _, port := range ports{
-		server := &Auction_service{
-			bids: make(map[int]int),
-			highest: 0,
-			counter: 0,
-		}
-		go server.start_server(port,ports)
+	server := &Auction_service{
+		bids: make(map[int]int),
+		highest: 0,
+		counter: 0,
+	}
+
+	log.Println("Enter the port of the server (A number from 0 to 2)");
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	Text := scanner.Text()
+
+	if Text == "0" || Text == "1" || Text == "2"{
+		go server.start_server(ports[int(Text)],ports)
+		log.Println("Port selected: " + ports[int(Text)])
+	} else{
+		log.Println("Enter the correct port of the server (A number from 0 to 2)");
 	}
 
 	/*go server.start_server(":5050",ports)
