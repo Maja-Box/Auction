@@ -19,8 +19,12 @@ var counter int
 
 var client proto.AuctionClient
 
+var conn *grpc.ClientConn
+
 func main() {
-	conn, err := grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	var err error
+	conn, err = grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	
 	if err != nil {
 		log.Fatalf("Could not connect to :5050")
 	}
@@ -63,7 +67,9 @@ func checkFunc(){
 		connect()
 		checkFunc()
 	}
-	log.Println(check)
+	if check != nil{
+		log.Println(check)
+	}
 }
 
 func bid() {
@@ -96,13 +102,17 @@ func bid() {
 		clientId = int(send.BidderId)
 		log.Println(send.BidderId)
 	}
-	log.Println(send)
+	if send != nil{
+		log.Println(send.Ack)
+	}
+	
 }
 
 func connect(){
 	counter++
+	var err error
 	if counter == 1{
-		conn, err := grpc.NewClient("localhost:5051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err = grpc.NewClient("localhost:5051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 			log.Println("Could not create connection to :5051")
 			connect()
@@ -118,13 +128,13 @@ func connect(){
 		}
 		log.Println("i connected to server 5051")
 
-		send, err := client.UpdateServer(context.Background(), &proto.Crash{Port : ":5050",})
+		/*send, err := client.UpdateServer(context.Background(), &proto.Crash{Port : ":5050",})
 		if err != nil{
 			log.Println("error while sending client bid")
 		}
-		log.Println(send)
+		log.Println(send)*/
 	}else if counter == 2{
-		conn, err := grpc.NewClient("localhost:5052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err = grpc.NewClient("localhost:5052", grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 			log.Fatalf("Not working client 1")
 		}
@@ -134,11 +144,11 @@ func connect(){
 		}
 		client = proto.NewAuctionClient(conn)
 		log.Println("i connected to server 5052")
-		send, err := client.UpdateServer(context.Background(), &proto.Crash{Port : ":5051",})
+		/*send, err := client.UpdateServer(context.Background(), &proto.Crash{Port : ":5051",})
 		if err != nil{
 			log.Println("error while sending client bid")
 		}
-		log.Println(send)
+		log.Println(send) */
 	} else {
 		log.Println("No more servers available")
 	}
